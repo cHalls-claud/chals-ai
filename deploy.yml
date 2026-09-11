@@ -1,0 +1,36 @@
+name: Deploy chals.ai (1 zip)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip if zip exists (for 1-file upload)
+        run: |
+          if ls *.zip 1> /dev/null 2>&1; then
+            for z in *.zip; do
+              echo "Unzipping $z"
+              unzip -o "$z" -d .
+              rm "$z"
+            done
+          fi
+          ls -la
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4
